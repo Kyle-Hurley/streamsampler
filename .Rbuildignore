@@ -8,7 +8,7 @@ CONDUCT.md
 code.json
 ^README\.Rmd$
 ^docker$
-^.gitlab$
+^\.github$
 .gitlab-ci.yml
 ^LICENSE\.md$
 .vscode
