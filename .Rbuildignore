@@ -12,3 +12,4 @@ code.json
 .gitlab-ci.yml
 ^LICENSE\.md$
 .vscode
+^cran-comments\.md$
