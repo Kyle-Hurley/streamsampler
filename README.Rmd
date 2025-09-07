@@ -23,16 +23,19 @@ The streamsampler package can also determine the completeness of a discharge or 
 
 ## Installation
 
-You can install the current version of streamsampler by executing the 
-commands below. Note that building the vignettes will require [RTools](https://cran.r-project.org/bin/windows/Rtools/).
+Install the released version from CRAN:
+
+```{r, eval = FALSE}
+install.packages("butcher")
+```
+
+Or install the development version from [GitHub](https://github.com/):
 
 ``` r
-install.packages("remotes")
+# install.packages("remotes")
 remotes::install_github(
-  repo = "Kyle-Hurley/streamsampler", 
-  build_vignettes = TRUE # Requires RTools
+  repo = "Kyle-Hurley/streamsampler"
 )
-library(streamsampler)
 ```
 
 ## Methodology
