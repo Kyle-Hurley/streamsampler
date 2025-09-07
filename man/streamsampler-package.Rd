@@ -17,7 +17,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Kyle Hurley \email{kp.hurley87@gmail.com} (\href{https://orcid.org/0009-0002-6469-3769}{ORCID})
+\strong{Maintainer}: Kyle Hurley \email{kp.hurley87@gmail.com} (\href{https://orcid.org/0009-0002-6469-3769}{ORCID}) [copyright holder]
 
 Authors:
 \itemize{
