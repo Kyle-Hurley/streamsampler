@@ -11,13 +11,13 @@ A series of functions that characterizes daily stream discharge and water qualit
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://code.usgs.gov/water/streamsampler}
-  \item Report bugs at \url{https://code.usgs.gov/water/streamsampler/-/issues}
+  \item \url{https://github.com/Kyle-Hurley/streamsampler}
+  \item Report bugs at \url{https://github.com/Kyle-Hurley/streamsampler/issues}
 }
 
 }
 \author{
-\strong{Maintainer}: Kyle Hurley \email{khurley@usgs.gov} (\href{https://orcid.org/0009-0002-6469-3769}{ORCID})
+\strong{Maintainer}: Kyle Hurley \email{kp.hurley87@gmail.com} (\href{https://orcid.org/0009-0002-6469-3769}{ORCID})
 
 Authors:
 \itemize{

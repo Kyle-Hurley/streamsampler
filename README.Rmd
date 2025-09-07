@@ -28,9 +28,8 @@ commands below. Note that building the vignettes will require [RTools](https://c
 
 ``` r
 install.packages("remotes")
-remotes::install_gitlab(
-  repo = "water/streamsampler@1.0.0", 
-  host = "https://code.usgs.gov", 
+remotes::install_github(
+  repo = "Kyle-Hurley/streamsampler", 
   build_vignettes = TRUE # Requires RTools
 )
 library(streamsampler)
@@ -38,7 +37,7 @@ library(streamsampler)
 
 ## Methodology
 
-There are two subsampling methods provided, one that is psuedo-random and one that is strictly routine. Together, these functions are intended to subsample a (near) daily water quality record such that the output resembles water quality sampling strategies described in [Lee et al., 2016](https://www.sciencedirect.com/science/article/pii/S0022169416305492) and [Lee et al., 2019](https://pubs.usgs.gov/sir/2019/5084/sir20195084.pdf).
+There are two subsampling methods provided, one that is psuedo-random and one that is strictly routine. Together, these functions are intended to subsample a (near) daily water quality record such that the output resembles water quality sampling strategies described in [Lee et al., 2016](https://doi.org/10.1016/j.jhydrol.2016.08.059) and [Lee et al., 2019](https://doi.org/10.3133/sir20195084).
 
 ### subsample()
 
@@ -343,17 +342,4 @@ legend(
 ## Reporting bugs
 
 Please consider reporting bugs and asking questions on the Issues page:
-<https://code.usgs.gov/water/streamsampler/-/issues>
-
-Regarding package maintenance and development, email comptools@usgs.gov for more information.
-
-
-## How to cite streamsampler:
-
-```{r }
-citation(package = "streamsampler")
-```
-
-
-```{r disclaimer, child="DISCLAIMER.md", eval=TRUE}
-```
+<https://github.com/Kyle-Hurley/streamsampler/issues>

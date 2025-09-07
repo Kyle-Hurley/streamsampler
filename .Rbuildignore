@@ -10,3 +10,5 @@ code.json
 ^docker$
 ^.gitlab$
 .gitlab-ci.yml
+^LICENSE\.md$
+.vscode

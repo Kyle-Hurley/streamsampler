@@ -34,14 +34,14 @@ values.
 
 ## Installation
 
-You can install the current version of streamsampler by executing the 
-commands below. Note that building the vignettes will require [RTools](https://cran.r-project.org/bin/windows/Rtools/).
+You can install the current version of streamsampler by executing the
+commands below. Note that building the vignettes will require
+[RTools](https://cran.r-project.org/bin/windows/Rtools/).
 
 ``` r
 install.packages("remotes")
-remotes::install_gitlab(
-  repo = "water/streamsampler@1.0.0", 
-  host = "https://code.usgs.gov", 
+remotes::install_github(
+  repo = "Kyle-Hurley/streamsampler", 
   build_vignettes = TRUE # Requires RTools
 )
 library(streamsampler)
@@ -53,9 +53,8 @@ There are two subsampling methods provided, one that is psuedo-random
 and one that is strictly routine. Together, these functions are intended
 to subsample a (near) daily water quality record such that the output
 resembles water quality sampling strategies described in [Lee et al.,
-2016](https://www.sciencedirect.com/science/article/pii/S0022169416305492)
-and [Lee et al.,
-2019](https://pubs.usgs.gov/sir/2019/5084/sir20195084.pdf).
+2016](https://doi.org/10.1016/j.jhydrol.2016.08.059) and [Lee et al.,
+2019](https://doi.org/10.3133/sir20195084).
 
 ### subsample()
 
@@ -344,7 +343,7 @@ legend("topleft",
 )
 ```
 
-<img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-2-1.png" width="100%" />
 
 There are several ways to change the subsampling procedure. In the
 example below, SC will be used as the threshold reference instead of
@@ -455,36 +454,4 @@ legend(
 ## Reporting bugs
 
 Please consider reporting bugs and asking questions on the Issues page:
-<https://code.usgs.gov/water/streamsampler/-/issues>
-
-Regarding package maintenance and development, email
-<comptools@usgs.gov> for more information.
-
-## How to cite streamsampler:
-
-``` r
-citation(package = "streamsampler")
-#> To cite package 'streamsampler' in publications use:
-#> 
-#>   Hurley, K.P., Chanat, J.G., 2025, Stratified Subsampling of Stream
-#>   Water Quality Data, version 1.0.0, doi:10.5066/P13LOY8D
-#> 
-#> A BibTeX entry for LaTeX users is
-#> 
-#>   @Manual{,
-#>     title = {Stratified Subsampling of Stream Water Quality Data},
-#>     author = {Kyle Hurley and Jeff Chanat},
-#>     publisher = {U.S. Geological Survey},
-#>     year = {2025},
-#>   }
-```
-
-## Disclaimer
-
-This software is preliminary or provisional and is subject to revision. It is being provided to
-meet the need for timely best science. The software has not received final approval by the U.S.
-Geological Survey (USGS). No warranty, expressed or implied, is made by the USGS or the U.S.
-Government as to the functionality of the software and related material nor shall the fact of
-release constitute any such warranty. The software is provided on the condition that neither the
-USGS nor the U.S. Government shall be held liable for any damages resulting from the authorized or
-unauthorized use of the software.
+<https://github.com/Kyle-Hurley/streamsampler/issues>
