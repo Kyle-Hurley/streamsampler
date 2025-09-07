@@ -37,7 +37,7 @@ values.
 Install the released version from CRAN:
 
 ``` r
-install.packages("butcher")
+install.packages("streamsampler")
 ```
 
 Or install the development version from [GitHub](https://github.com/):

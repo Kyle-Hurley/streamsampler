@@ -26,7 +26,7 @@ The streamsampler package can also determine the completeness of a discharge or 
 Install the released version from CRAN:
 
 ```{r, eval = FALSE}
-install.packages("butcher")
+install.packages("streamsampler")
 ```
 
 Or install the development version from [GitHub](https://github.com/):
