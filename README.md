@@ -34,17 +34,19 @@ values.
 
 ## Installation
 
-You can install the current version of streamsampler by executing the
-commands below. Note that building the vignettes will require
-[RTools](https://cran.r-project.org/bin/windows/Rtools/).
+Install the released version from CRAN:
 
 ``` r
-install.packages("remotes")
+install.packages("butcher")
+```
+
+Or install the development version from [GitHub](https://github.com/):
+
+``` r
+# install.packages("remotes")
 remotes::install_github(
-  repo = "Kyle-Hurley/streamsampler", 
-  build_vignettes = TRUE # Requires RTools
+  repo = "Kyle-Hurley/streamsampler"
 )
-library(streamsampler)
 ```
 
 ## Methodology
@@ -343,7 +345,7 @@ legend("topleft",
 )
 ```
 
-<img src="man/figures/README-unnamed-chunk-2-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
 
 There are several ways to change the subsampling procedure. In the
 example below, SC will be used as the threshold reference instead of
