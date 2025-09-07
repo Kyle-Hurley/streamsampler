@@ -1,0 +1,566 @@
+---
+title: "streamsampler"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{streamsampler}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>", 
+  fig.height = 5, 
+  fig.width = 7, 
+  out.width = "80%", 
+  fig.show = "hold", 
+  fig.align = "center"
+)
+```
+
+```{r reallib, include = FALSE}
+library(streamsampler)
+df <- streamsampler::streamdat
+```
+
+```{r fakelib, eval = FALSE}
+library(streamsampler)
+library(dataRetrieval)
+```
+
+# Introduction to streamsampler
+
+The goal of `streamsampler` is to provide the ability to perform periodic and/or stratified subsampling of a water quality record of daily (or at least very frequent) observations. The water quality record can be subsampled based on a set frequency, such as the 15th of each month; or the water quality record is stratified based on a seasonal threshold of reference measurements, such as discharge, and then subsampled for measurements occuring below and exceeding the threshold. For example, observations associated with a reference measurement below the threshold, subsampling is conducted at a specified frequency (e.g., monthly). Observations associated with a reference measurement exceeding the threshold are subsampled for each year of the record. Either method results in a subsampled record that reasonably approximates a water quality record that would have been produced by physical data collection.
+
+A subsampled water quality record allows a user to apply mathematical, statistical, and/or modeling techniques to a record with less frequent observations. For example, a user may find a 30-year record of daily water quality observations, subsample the record, fit a WRTDS model (from the \`EGRET\` package), and then compare the results to the complete record. A user may also implement \`streamsampler\` in their methods for conducting train/test or cross-validation splits in machine learning modeling.
+
+The streamsampler package can also determine the completeness of a discharge or water quality record, determine the location of gaps in the record, and provide the number and proportion of positive and negative values.
+
+# Download Data
+
+To explore the uses of streamsampler, we'll first need to download and create a real-world data set using the `dataRetrieval` package.
+
+We will look at daily discharge ("00060") and daily specific conductivity (SC; "00095") for Brandywine Creek at Wilmington, DE (USGS 01481500).
+
+```{r, eval=FALSE}
+daily <- dataRetrieval::readNWISdv(
+  siteNumbers = "01481500", 
+  parameterCd = "00060", 
+  startDate = "2007-10-01", 
+  endDate = "2023-09-30"
+)
+
+qw <- dataRetrieval::readNWISdv(
+  siteNumbers = "01481500", 
+  parameterCd = "00095", 
+  startDate = "2007-10-01", 
+  endDate = "2023-09-30"
+)
+
+daily <- daily[, -c(1,2,5)]
+colnames(daily) <- c("date", "q")
+
+qw <- qw[, -c(1,2,5)]
+colnames(qw) <- c("date", "sc")
+
+df <- merge(daily, qw, by = "date", all.x = TRUE, all.y = TRUE)
+```
+
+```{r dim}
+dim(df)
+```
+
+# Investigate Completeness
+
+Our data set, `df`, contains a little over 5,800 observations and spans about 16 years. Subsampling a dataset such as this *might* result in data that is acceptable for a modelling technique. However, some modelling techniques (e.g. WRTDS) have data requirements, such as a discharge record that is 100% complete and contains no (or very little) negative flow values.
+
+To test the record for completeness, `eval_dates()` can be used to compare a water quality record to a hypothetical and idealized complete record. The first argument accepts a vector of dates that a measurement was made. Be sure to filter `NA` values beforehand. The next two arguments are `rec_start` and `rec_end`. These describe the starting and ending dates of the hypothetically complete record. And `by` describes the increment of the comparison record.
+
+In other words, if you want to compare your discharge record to a study period beginning October 1, 2007 and ending September 30, 2023 which should have a discharge value for each day, then you would perform the following:
+
+```{r evalq}
+# Subset for discharge record
+q_dates <- df[!is.na(df$q), "date"]
+results <- eval_dates(
+  dates = q_dates, 
+  rec_start = as.Date("2007-10-01"), 
+  rec_end = as.Date("2023-09-30"), 
+  by = "day"
+)
+print(results)
+```
+
+From the results we see that the discharge record is 100% percent complete and is not missing any discharge values compared to our hypothetical study period record.
+
+Lets look at the completeness of SC.
+
+```{r evalqw}
+# Subset for sc record
+qw_dates <- df[!is.na(df$sc), "date"]
+sc_completeness <- eval_dates(
+  dates = qw_dates, 
+  rec_start = as.Date("2007-10-01"), 
+  rec_end = as.Date("2023-09-30"), 
+  by = "day"
+)
+print(sc_completeness)
+```
+
+The record is just under 98.7% complete and is missing 77 daily observations.
+
+`eval_dates()` can also accept "week", "month", "quarter", and "year" for its `by` argument. As an example, lets say we wanted to make sure our water quality record contains at least one sample per week. `eval_dates()` will group all sample dates by week (or whichever increment `by` is defined as) and compare it to the hypothetical record.
+
+```{r evalex}
+ex_sample_dates <- seq.Date(
+  from = as.Date("2020-01-01"), 
+  to = as.Date("2022-12-31"), 
+  by = "9 days"
+)
+eval_dates(
+  dates = ex_sample_dates, 
+  rec_start = as.Date("2020-01-01"), 
+  rec_end = as.Date("2022-12-31"), 
+  by = "week"
+)
+```
+
+In this case, there are 37 weeks with no measurements.
+
+# Finding Gaps
+
+Knowing how complete a record is can be helpful, but it is not a full picture of how the missing data are spread throughout. Identifying gaps and their location in a data set is a common problem when exploring time series data.
+
+`find_gaps()` is a simple function that takes only a vector of dates to assess the gaps in the record. We'll only assess our SC record since we know the discharge record is complete.
+
+```{r gapsqw}
+qw_dates <- as.Date(df[!is.na(df$sc), "date"])
+qw_gaps <- find_gaps(dates = qw_dates)
+head(qw_gaps)
+
+```
+
+In our SC record, there is one rather large gap of 9 days. The first date without a sample is August 5, 2020; and the last date without a sample is August 13, 2020.
+
+The return from `find_gaps()` also shows the location of the gap in the dataset. With a little code, we can see the gap in its entirety.
+
+```{r viewgaps}
+gap_start <- which(
+  df$date == qw_gaps[1, "start"]
+)
+gap_end <- which(
+  df$date == qw_gaps[1, "end"]
+)
+df[(gap_start - 1):(gap_end + 1), ]
+```
+
+In this case, it appears the SC sensor may have stopped working during or after a large discharge event.
+
+# Zero or Negative Flow
+
+In some gaged streams, discharge can be zero or even negative. These characteristics may or may not be desirable when building a model.
+
+Using `eval_sign()` is an easy way to quickly assess how many discharge values are positive (q \> 0) and negative (q \<= 0), and their relative proportions. Only the vector of relevant data is required.
+
+```{r evalsign}
+q_data <- df[!is.na(df$q), "q"]
+eval_sign(values = q_data)
+```
+
+The data in our example does not have any 0 or negative discharge values.
+
+# Summary Stats
+
+To get a quick look at a vector of data, we often use `summary()` and then combine the output with other information manually. The function `qw_stats()` was developed to automate this process.
+
+`qw_stats()` is a wrapper for `eval_dates()`, `summary()`, `sd()`, `var()`, and `eval_sign()`, giving the user a simple tool to assess summary statistics. The function needs the vector of dates measurements were made, the values of those measurements, and the ideal start and end dates of the record.
+
+```{r statsqw}
+df_stats <- qw_stats(
+  dates = df$date, 
+  values = df$sc, 
+  rec_start = as.Date("2007-10-01"), 
+  rec_end = as.Date("2023-09-30"), 
+  by = "day"
+)
+df_stats
+```
+
+# Characterize Flow by Season
+
+One of the primary goals of streamsampler is to provide the ability to subsample a water quality record stratifying it across time and a reference (discharge in our example). Because the sampling protocol may depend on seasonal variations in discharge, and therefore the criteria for selecting high flow observations from the record, the ability to characterize flow by season is needed.
+
+`summarize_seasons()` allows a user to characterize seasons by monthly values, seasonal values, and the rank of the season's values. The function returns a list of two data frames: one for monthly values and the other for seasonal values. The function needs a vector of dates measurements were made, the values of those measurements, the month in which the first season starts, and the number of seasons in a year.
+
+The `season_start` and `n_seasons` arguments change the grouping of the data based on the month of the start of the first season and how many seasons are in a year respectively. If the season starts in December (`season_start = 12`) and there are 4 seasons in a year (`n_seasons = 4`), then the values occurring in December will be grouped with those occurring in January and February of the following year. The year is designated by the year in which it ends (i.e., the seasonally adjusted year).
+
+The default `season_start` is October (10) to adhere to a water year standard. This means, for example, the calendar date of October 1, 2020 is the water year 2021.
+
+Lets take a closer look at our example dataset.
+
+```{r summmonth}
+season_summary <- summarize_seasons(
+  dates = df$date, 
+  values = df$q, 
+  season_start = 10, 
+  n_seasons = 4
+)
+
+head(season_summary$monthly)
+```
+
+In the example above, we are looking at the average discharge for each unique calendar year-month combination.
+
+We can also look at the average discharge for each unique adjusted year-season combination where the year is seasonally adjusted based on when the season starts. Season 2 of 2008 has the highest average discharge (rank 1) for that seasonally adjusted year at 624 cfs, followed by season 3 at 446 cfs.
+
+```{r summseason}
+head(season_summary$seasonal)
+```
+
+Arranging by the `adj_year` and `season` columns allows us to see how the values change over time.
+
+```{r sznavgplot}
+df_seasons <- season_summary$seasonal
+df_seasons <- df_seasons[order(df_seasons$adj_year, df_seasons$season), ]
+plot(
+  df_seasons$avg_value, 
+  type = "l", 
+  xaxt = "n", 
+  xlab = "Water Year", 
+  ylim = c(0, 1200)
+)
+axis(
+  1, 
+  at = seq(1, length(df_seasons$adj_year), by = 4), 
+  labels = unique(df_seasons$adj_year), 
+  las = 2
+)
+```
+
+It may be desirable to calculate monthly and seasonal flow values based on a rolling average of the discharge instead of their daily value. The function `rollmean_date()` will calculate the right-aligned sliding average of a value across a user-specified window. Only the values occurring within the moving window of time are averaged. The `rollmean_date()` function is a wrapper for `slide_index()` from the [{slider}](https://slider.r-lib.org/) package.
+
+This function takes a `look_behind` and `look_ahead` argument with a `look_units` argument. These arguments are the time to include before and after the index when calculating the mean. The entry point (i.e. mean) is always set to the location of the index. For example, if `look_back` is 2 and `look_units` is "days", then the mean of the 3-day window is centered on the 3rd day of the window. If the `look_back` is 3, the `look_ahead` is 3, and `look_units` is "days", then the mean of the 7-day window is centered on the 4th day of the window.
+
+```{r rollmeanq}
+roll_q <- rollmean_date(
+  dates = df$date, 
+  values = df$q, 
+  look_behind = 29, 
+  look_units = "days"
+)
+df[["rollmean_q"]] <- roll_q
+
+df_rollq_seasons <- summarize_seasons(
+  dates = df$date, 
+  values = df$rollmean_q, 
+  season_start = 10, 
+  n_seasons = 4
+)$seasonal
+
+df_rollq_seasons <- df_rollq_seasons[order(df_rollq_seasons$adj_year, df_rollq_seasons$season), ]
+plot(
+  df_seasons$avg_value, 
+  type = "l", col = "darkgray", 
+  xaxt = "n", 
+  xlab = "Water Year", ylab = "Discharge (cfs)", 
+  ylim = c(0, 1200)
+)
+lines(
+  df_rollq_seasons$avg_value, col = "black"
+)
+axis(
+  1, 
+  at = seq(1, length(df_rollq_seasons$adj_year), by = 4), 
+  labels = unique(df_rollq_seasons$adj_year), 
+  las = 2
+)
+legend(
+  "topleft", 
+  c("Q", "30-day mean (cfs)"), 
+  col = c("darkgray", "black"), lty = 1
+)
+```
+
+Now that we have an idea of what flow looks like across seasons, we can get a better idea of what is or is not a high flow volume.
+
+# Define Thresholds
+
+We use `thresholds()` here to get an idea of the flow thresholds for each season across a group of years, where flow values exceeding these thresholds would be considered storm flow (or high flow) within that year grouping. This function calculates the user-defined quantile from a set of values that are grouped by a range of years. Note that this function groups values based on the seasonally adjusted year, not the calendar year (unless `season_start = 1`).
+
+This function takes two arguments that we have not seen yet: `half_win` and `threshold`. The `half_win` argument is responsible for controlling the grouping of data and is the half window range in years. It's default is 2 years, meaning the percentile is calculated over total range of 5 years (2-years prior, index year, 2-years after). And the `threshold` is the percentile to be calculated. Lets investigate our rolling mean discharge for thresholds at the 80th percentile based on a 5-year sliding window.
+
+```{r defthresh}
+rollq_thresh <- thresholds(
+  dates = df$date, 
+  values = df$rollmean_q, 
+  season_start = 10, 
+  n_seasons = 4, 
+  half_win = 2, 
+  threshold = 0.8
+)
+head(rollq_thresh)
+```
+
+From our results we see that season 1, centered on the seasonally adjusted year 2010, has a threshold of 745.5 cfs. Flow values larger than this during season 1 of water years 2008-2012 (i.e. calendar years 2007-2011) would be considered high flow, which are then eligible for subsampling if high flow samples are desired.
+
+# Subsampling
+
+To subsample a near-daily water quality record to one that contains observations based on a sampling protocol, we use `subsample()`.
+
+This function will select observations based on the desired number of recurring observations (values less than the threshold) at a specified frequency (e.g., monthly), the desired number of exceeds-threshold observations (values greater than a threshold), whether or not observations occurring at peaks (e.g. local maxima) should be targeted, and the weighting of seasons by their rank.
+
+The arguments `n_samples` and `freq` define how many and how frequently recurring samples should be selected from the data. For example, ``` n_samples``= 1 ``` and `freq` `= "month"` would result in 1 observation per month being selected. However, ``` n_samples``= 12 ``` and `freq = "year"` would results in 12 observations per year, but not necessarily 1 per month. Note when `freq = "year"` the year is referenced from the date column and not the seasonally adjusted year. The options for `freq` are "week", "month", "quarter", and "year".
+
+`n_et_samples` defines the number of exceeds-threshold observations to select in each calendar year. How the function selects these observations can be influenced by the `season_weights` and `target` arguments. `season_weights` adjusts the weight of observations based on the season in which they occur. Doubling the weight of the highest ranked season (e.g. the season with the highest flow) doubles the probability observations exceeding the threshold are selected from that season. The `target` argument can be set to `"peaks"`, which will double the weight for observations corresponding to `thresh_ref` local maximas.
+
+Assigning weights based on these criteria does not guarantee certain observations will be selected, but does affect the probability of the observations being selected.
+
+What is returned is a dataframe with the following information:
+
+| Name | Type | Description |
+|------------------------|------------------------|------------------------|
+| date | Date | Date |
+| adj_year | integer | Adjusted year |
+| season | integer | Season number 1:n_seasons |
+| value | numeric | Input `values` |
+| thresh_ref | numeric | Input `thresh_ref` values |
+| threshold | numeric | Seasonal `threshold` quantile of `thresh_ref` |
+| is_peak | logical | TRUE when `thresh_ref` value is local maximum. Only when `target` is "peaks". TRUE/FALSE |
+| selection_type | character | Type of randomly selected value: "not_selected" (an observation not selected), below_threshold" (selected record with value at or below threshold), or "exceeds_threshold" (selected record with value above threshold) |
+| weight | integer | Weight assigned to the value |
+| ys_rank | integer | Unique year-season rank of the seasonal average `thresh_ref` |
+
+In the example, the water quality record is subsampled for SC based on the rolling mean discharge values.
+
+```{r subsamp}
+ss_sc <- subsample(
+  dates = df$date, 
+  values = df$sc,  
+  thresh_ref = df$rollmean_q
+)
+head(ss_sc)
+```
+
+In the example, we are subsampling our SC record with respect to discharge (`thresh_ref`). By default, there are 4 seasons and season 1 starts in October, 1 below-threshold observation is selected per month, and 8 exceeds-threshold samples are selected per year.
+
+**Note:** `subsample()` relies on random number generation. For results to be reproducible, the default `seed` argument provided is 123. Users can change the `seed` to any positive integer value.
+
+```{r plotss}
+
+not_selected <- ss_sc[ss_sc$selection_type == "not_selected", ]
+blw_thresh <- ss_sc[ss_sc$selection_type == "below_threshold", ]
+excd_thresh <- ss_sc[ss_sc$selection_type == "exceeds_threshold", ]
+
+# Sampling across dates
+plot(
+  not_selected$date, not_selected$thresh_ref, 
+  col = "gray", log = "y", ylim = c(50, 5000), 
+  xlab = "Date", ylab = "Q (cfs)"
+)
+points(
+  blw_thresh$date, blw_thresh$thresh_ref, 
+  col = "blue", pch = 16
+)
+points(
+  excd_thresh$date, excd_thresh$thresh_ref, 
+  col = "purple", pch = 16
+)
+legend("topright", 
+  c("not_selected", "below_threshold", "exceeds_threshold"), 
+  fill = c("gray", "blue", "purple")
+)
+
+# Sampling across the threshold reference
+plot(
+  not_selected$thresh_ref, not_selected$value, 
+  log = "x", ylim = c(0, max(ss_sc$value, na.rm = TRUE)), 
+  xlim = c(50, 2000), col = "gray", 
+  xlab = "Q (cfs)", ylab = "SC (uS/cm)"
+)
+points(
+  blw_thresh$thresh_ref, blw_thresh$value, 
+  col = "blue", pch = 16
+)
+points(
+  excd_thresh$thresh_ref, excd_thresh$value, 
+  col = "purple", pch = 16
+)
+legend("topleft", 
+  c("not_selected", "below_threshold", "exceeds_threshold"), 
+  fill = c("gray", "blue", "purple")
+)
+
+# Compare spread
+ss_sc$q_lab <- "Discharge"
+ss_sc$sc_lab <- "SC"
+boxplot(
+  thresh_ref ~ selection_type + q_lab, data = ss_sc, 
+  at = 1:3, 
+  xlim = c(0.5, 7.0),
+  log = "y",
+  col = "#7fc97f", ylab = "", xlab = "", xaxt = "n"
+)
+boxplot(
+  value ~ selection_type + sc_lab, data = ss_sc, 
+  add = TRUE, at = 5:7 - 0.5, xaxt = "n", 
+  col = "#beaed4"
+)
+axis(
+  1, at = c(1:3, 5:7 - 0.5), 
+  labels = rep(c("below", "exceeds", "not\nsampled"), 2), 
+  lwd = 0
+)
+legend(
+  "topright", 
+  c("Discharge (cfs)", "SC (uS/cm)"), 
+  fill = c("#7fc97f", "#beaed4")
+)
+```
+
+The below-threshold values for both discharge and SC approximate the values that were not selected. However, it does appear that there are some SC values that are elevated near the middle of the discharge-space. While the SC-Q relationship may be somewhat negatively proportional (i.e., lower SC at higher Q), the plots suggest that SC cannot be entirely explained by discharge. If a modeler was looking to create a regression to estimate SC, then the method of subsampling of SC may need to change.
+
+Assuming an appropriate scenario, we can adjust the subsampling protocol. In this case, the number of recurring samples is reduced to 1 per quarter, exceeds-threshold (90th percentile) samples is increased to 10 per year, the season starts in January with only 3 seasons per year, the seasons weighted such that the driest seasons are 3-times more likely to be selected, and peaks are targeted based on a 30-day sliding window
+
+```{r plotssnew}
+ss_sc_peaks <- subsample(
+  dates = df$date, 
+  values = df$sc, 
+  n_samples = 1, freq = "quarter", 
+  thresh_ref = df$sc, 
+  threshold = 0.9, n_et_samples = 10, 
+  look_behind = 14, look_ahead = 14, look_units = "days", 
+  season_weights = c(1, 1, 3), season_start = 1, n_seasons = 3
+)
+
+
+ss_df <- merge(df, ss_sc_peaks[, c("date", "selection_type")])
+not_selected <- ss_df[ss_df$selection_type == "not_selected", ]
+blw_thresh <- ss_df[ss_df$selection_type == "below_threshold", ]
+excd_thresh <- ss_df[ss_df$selection_type == "exceeds_threshold", ]
+
+
+# Sampling across dates
+plot(
+  not_selected$date, not_selected$sc, 
+  col = "gray", log = "y", 
+  xlab = "Date", ylab = "SC (uS/cm)"
+)
+points(
+  blw_thresh$date, blw_thresh$sc, 
+  col = "blue", pch = 16
+)
+points(
+  excd_thresh$date, excd_thresh$sc, 
+  col = "purple", pch = 16
+)
+legend("topleft", 
+  c("not_selected", "below_threshold", "exceeds_threshold"), 
+  fill = c("gray", "blue", "purple")
+)
+
+# Sampling across the threshold reference
+plot(
+  not_selected$q, not_selected$sc, col = "gray", 
+  log = "x", ylim = c(0, max(ss_sc$value, na.rm = TRUE)), 
+  xlab = "Q (cfs)", ylab = "SC (uS/cm)"
+)
+points(
+  blw_thresh$q, blw_thresh$sc, 
+  col = "blue", pch = 16
+)
+points(
+  excd_thresh$q, excd_thresh$sc, 
+  col = "purple", pch = 16
+)
+legend("topleft", 
+  c("not_selected", "below_threshold", "exceeds_threshold"), 
+  fill = c("gray", "blue", "purple")
+)
+
+# Compare spread
+ss_df$q_lab <- "Discharge"
+ss_df$sc_lab <- "SC"
+boxplot(
+  q ~ selection_type + q_lab, data = ss_df, 
+  # at = 1:3 - 0.2, 
+  at = 1:3, 
+  # boxwex = 0.25, 
+  xlim = c(0.5, 7.0),
+  log = "y",
+  col = "#7fc97f", ylab = "", xlab = "", xaxt = "n"
+  # names = c("below", "exceeds", "not\nsampled")
+)
+boxplot(
+  sc ~ selection_type + sc_lab, data = ss_df, 
+  add = TRUE, at = 5:7 - 0.5, xaxt = "n", 
+  col = "#beaed4"
+  # names = c("below", "exceeds", "not\nsampled")
+)
+axis(
+  1, at = c(1:3, 5:7 - 0.5), 
+  labels = rep(c("below", "exceeds", "not\nsampled"), 2), 
+  lwd = 0
+)
+legend(
+  "topright", 
+  c("Discharge (cfs)", "SC (uS/cm)"), 
+  fill = c("#7fc97f", "#beaed4")
+)
+```
+
+# Routine Subsampling
+
+Lastly, we may want to subsample a water quality record by a simple recurring and periodic selection of observations. The example below demonstrates how a user can implement the function `subsample_routine()` to subsample a water quality record on the 15th of each month.
+
+```{r}
+sroutine <- subsample_routine(
+  dates = df$date, 
+  values = df$sc, 
+  day = 15, freq = "month"
+)
+
+sroutine <- merge(df[, -c(3, 4)], sroutine)
+
+plot(
+  sroutine[sroutine$selection_type == "not_selected", "date"], 
+  sroutine[sroutine$selection_type == "not_selected", "value"], 
+  col = "gray", log = "y", 
+  xlab = "Date", 
+  ylab = "SC (uS/cm)"
+)
+points(
+  sroutine[sroutine$selection_type == "routine", "date"], 
+  sroutine[sroutine$selection_type == "routine", "value"], 
+  col = "blue", pch = 16
+)
+legend("topleft", 
+  c("Not Selected", "Routine"), 
+  fill = c("gray", "blue")
+)
+
+plot(
+  sroutine$q[sroutine$selection_type == "not_selected"],
+  sroutine$value[sroutine$selection_type == "not_selected"],
+  pch = 21, col = "gray",
+  xlab = "Q (cfs)", ylab = "SC (uS/cm)",
+  main = "Subsampled Daily Data",
+  log = "x"
+)
+points(
+  sroutine$q[sroutine$selection_type != "not_selected"],
+  sroutine$value[sroutine$selection_type != "not_selected"],
+  pch = 16, cex = 1.5,
+  col = c(
+    "routine" = "blue"
+  )[sroutine$selection_type[sroutine$selection_type != "not_selected"]]
+)
+legend(
+  "topright",
+  legend = c("Not Selected", "Routine"),
+  col = c("gray", "blue"),
+  pch = c(21, 16),
+  bty = "n"
+)
+```
+
+It's important to note that `subsample_routine()` is a wrapper for the base R function `seq.Date()` and therefore does not rely on any random number generation. Users do not need to set or provide a seed value in order for results to be reproducible.

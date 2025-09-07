@@ -1,0 +1,92 @@
+[
+  {
+    "name": "streamsampler",
+    "organization": "U.S. Geological Survey",
+    "description": "An R-package to perform stratified subsampling of stream water quality data.",
+    "version": "main",
+    "status": "Development",
+
+    "permissions": {
+      "usageType": "openSource",
+      "licenses": [
+        {
+          "name": "Public Domain, CC0-1.0",
+          "URL": "https://code.usgs.gov/water/streamsampler/-/raw/main/LICENSE.md"
+        }
+      ]
+    },
+
+    "homepageURL": "https://code.usgs.gov/water/streamsampler",
+    "downloadURL": "https://code.usgs.gov/water/streamsampler/-/archive/main/streamsampler-main.zip",
+    "disclaimerURL": "https://code.usgs.gov/water/streamsampler/-/raw/main/DISCLAIMER.md",
+    "repositoryURL": "https://code.usgs.gov/water/streamsampler.git",
+    "vcs": "git",
+
+    "laborHours": 0,
+
+    "tags": [
+      "R",
+      "rstats", 
+      "USGS", 
+      "water"
+    ],
+
+    "languages": [
+      "R"
+    ],
+
+    "contact": {
+      "name": "Kyle Hurley",
+      "email": "khurley@usgs.gov"
+    },
+
+    "date": {
+      "metadataLastUpdated": "2025-02-11"
+    }
+  }, 
+  {
+    "name": "streamsampler",
+    "organization": "U.S. Geological Survey",
+    "description": "An R-package to perform stratified subsampling of stream water quality data.",
+    "version": "1.0.0",
+    "status": "Production",
+
+    "permissions": {
+      "usageType": "openSource",
+      "licenses": [
+        {
+          "name": "Public Domain, CC0-1.0",
+          "URL": "https://code.usgs.gov/water/streamsampler/-/raw/1.0.0/LICENSE.md"
+        }
+      ]
+    },
+
+    "homepageURL": "https://code.usgs.gov/water/streamsampler/-/tags/1.0.0",
+    "downloadURL": "https://code.usgs.gov/water/streamsampler/-/archive/1.0.0/streamsampler-1.0.0.zip",
+    "disclaimerURL": "https://code.usgs.gov/water/streamsampler/-/raw/1.0.0/DISCLAIMER.md",
+    "repositoryURL": "https://code.usgs.gov/water/streamsampler.git",
+    "vcs": "git",
+
+    "laborHours": 120,
+
+    "tags": [
+      "R",
+      "rstats", 
+      "USGS", 
+      "water"
+    ],
+
+    "languages": [
+      "R"
+    ],
+
+    "contact": {
+      "name": "Kyle Hurley",
+      "email": "khurley@usgs.gov"
+    },
+
+    "date": {
+      "metadataLastUpdated": "2025-02-11"
+    }
+  }
+]

@@ -1,0 +1,12 @@
+^streamsampler\.Rproj$
+^\.Rproj\.user$
+^data-raw$
+LICENSE.md
+DISCLAIMER.md
+CONTRIBUTING.md
+CONDUCT.md
+code.json
+^README\.Rmd$
+^docker$
+^.gitlab$
+.gitlab-ci.yml

@@ -1,0 +1,16 @@
+bibentry(
+  bibtype  = "Manual",
+  title    = "Stratified Subsampling of Stream Water Quality Data",
+  author   = c(
+    person(
+      given = "Kyle", family = "Hurley", 
+      email = "kp.hurley87@gmail.com", role = c("aut", "cre"), 
+      comment = c(ORCID = "0009-0002-6469-3769")), 
+    person(
+      given = "Jeff", family = "Chanat", 
+      email = "jchanat@usgs.gov", role = c("aut"), 
+      comment = c(ORCID = "0000-0002-3629-7307"))),
+  publisher  = "U.S. Geological Survey",
+  year     = 2025, 
+  textVersion = "Hurley, K.P., Chanat, J.G., 2025, Stratified Subsampling of Stream Water Quality Data, version 1.0.0, doi:10.5066/P13LOY8D"
+)
