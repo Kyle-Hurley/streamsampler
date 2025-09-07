@@ -6,7 +6,7 @@
 \alias{streamsampler-package}
 \title{streamsampler: Characterize and Subsample Stream Data}
 \description{
-A series of functions that characterizes daily stream discharge and water quality data and subsamples the water quality data. Provide dates, discharge, and water quality measurements and `streamsampler` can find gaps, get summary statistics, and subsample according to common stream sampling protocols.
+Characterize daily stream discharge and water quality data and subsample water quality data. Provide dates, discharge, and water quality measurements and `streamsampler` can find gaps, get summary statistics, and subsample according to common stream sampling protocols.
 }
 \seealso{
 Useful links:
