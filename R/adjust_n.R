@@ -6,6 +6,7 @@
 #' 
 #' @return An integer
 #' @keywords internal
+#' @noRd
 
 adjust_n <- function(dates, freq, n_size = 8) {
   

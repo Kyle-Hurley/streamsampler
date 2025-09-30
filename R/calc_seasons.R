@@ -27,6 +27,7 @@
 #' date_vec <- as.Date(c("2020-01-01", "2020-04-01", "2020-08-01", "2020-12-01"))
 #' streamsampler:::calc_seasons(date_vec, n_seasons = 3, season_start = 4)
 #' @keywords internal
+#' @noRd
 
 calc_seasons <- function(dates, n_seasons = 4, season_start = 10) {
   

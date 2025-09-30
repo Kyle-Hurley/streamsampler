@@ -13,3 +13,4 @@ code.json
 ^LICENSE\.md$
 .vscode
 ^cran-comments\.md$
+^CRAN-SUBMISSION$

@@ -7,6 +7,7 @@
 #'
 #' @return A TRUE/FALSE value with a "msg" attribute
 #' @keywords internal
+#' @noRd
 
 check_thresholds_inputs <- function(dates, values, season_start, n_seasons, half_win, threshold) {
   

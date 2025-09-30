@@ -39,6 +39,7 @@
 #' half_win <- 5
 #' streamsampler:::center_year(years, start_year, end_year, half_win)
 #' @keywords internal
+#' @noRd
 
 center_year <- function(years, start_year, end_year, half_win = 2) {
   

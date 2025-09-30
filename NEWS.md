@@ -1,4 +1,4 @@
-# streamsampler (development version)
+# streamsampler 0.1.0
 
 # streamsampler 0.0.0.900
 
