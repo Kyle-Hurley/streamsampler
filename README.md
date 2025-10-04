@@ -1,36 +1,18 @@
-
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
 # streamsampler
 
-The goal of `streamsampler` is to provide the ability to perform
-periodic and/or stratified subsampling of a water quality record of
-daily (or at least very frequent) observations. The water quality record
-can be subsampled based on a set frequency, such as the 15th of each
-month; or the record can be subsampled using a stratified approach based
-on a seasonal threshold of reference measurements, such as discharge,
-where observations occurring below and above the threshold are
-subsampled according to different parameters. For example, observations
-associated with a reference measurement below the threshold, subsampling
-is conducted at a specified frequency (e.g., monthly). Observations
-associated with a reference measurement exceeding the threshold are
-subsampled for each year of the record. Either method results in a
-subsampled record that reasonably approximates a water quality record
-that would have been produced by physical data collection.
+<!-- badges: start -->
 
-A subsampled water quality record allows a user to apply mathematical,
-statistical, and/or modeling techniques to a record with less frequent
-observations. For example, a user may find a 30-year record of daily
-water quality observations, subsample the record, fit a WRTDS model
-(from the `EGRET` package), and then compare the results to the complete
-record. A user may also implement `streamsampler` in their methods for
-conducting train/test or cross-validation splits in machine learning
-modeling.
+[![CRAN status](https://www.r-pkg.org/badges/version/streamsampler)](https://CRAN.R-project.org/package=streamsampler) [![metacran downloads](https://cranlogs.r-pkg.org/badges/grand-total/streamsampler)](https://CRAN.R-project.org/package=streamsampler)
 
-The streamsampler package can also determine the completeness of a
-discharge or water quality record, determine the location of gaps in the
-record, and provide the number and proportion of positive and negative
-values.
+<!-- badges: end -->
+
+The goal of `streamsampler` is to provide the ability to perform periodic and/or stratified subsampling of a water quality record of daily (or at least very frequent) observations. The water quality record can be subsampled based on a set frequency, such as the 15th of each month; or the record can be subsampled using a stratified approach based on a seasonal threshold of reference measurements, such as discharge, where observations occurring below and above the threshold are subsampled according to different parameters. For example, observations associated with a reference measurement below the threshold, subsampling is conducted at a specified frequency (e.g., monthly). Observations associated with a reference measurement exceeding the threshold are subsampled for each year of the record. Either method results in a subsampled record that reasonably approximates a water quality record that would have been produced by physical data collection.
+
+A subsampled water quality record allows a user to apply mathematical, statistical, and/or modeling techniques to a record with less frequent observations. For example, a user may find a 30-year record of daily water quality observations, subsample the record, fit a WRTDS model (from the `EGRET` package), and then compare the results to the complete record. A user may also implement `streamsampler` in their methods for conducting train/test or cross-validation splits in machine learning modeling.
+
+The streamsampler package can also determine the completeness of a discharge or water quality record, determine the location of gaps in the record, and provide the number and proportion of positive and negative values.
 
 ## Installation
 
@@ -51,52 +33,23 @@ remotes::install_github(
 
 ## Methodology
 
-There are two subsampling methods provided, one that is psuedo-random
-and one that is strictly routine. Together, these functions are intended
-to subsample a (near) daily water quality record such that the output
-resembles water quality sampling strategies described in [Lee et al.,
-2016](https://doi.org/10.1016/j.jhydrol.2016.08.059) and [Lee et al.,
-2019](https://doi.org/10.3133/sir20195084).
+There are two subsampling methods provided, one that is psuedo-random and one that is strictly routine. Together, these functions are intended to subsample a (near) daily water quality record such that the output resembles water quality sampling strategies described in [Lee et al., 2016](https://doi.org/10.1016/j.jhydrol.2016.08.059) and [Lee et al., 2019](https://doi.org/10.3133/sir20195084).
 
 ### subsample()
 
-The `subsample()` function is psuedo-random across time in that values
-are selected randomly in rolling chunks of time according to a defined
-frequency. If, for example, the frequency is weekly and the number of
-desired observations to be selected is 1, then the result will be 1
-randomly selected observation for each week in the record.
+The `subsample()` function is psuedo-random across time in that values are selected randomly in rolling chunks of time according to a defined frequency. If, for example, the frequency is weekly and the number of desired observations to be selected is 1, then the result will be 1 randomly selected observation for each week in the record.
 
-This subsampling method is also stratified by a seasonal reference
-threshold. Seasons and the threshold quantile are defined by the user.
-Observations with values occurring on dates at or below the associated
-seasonally adjusted reference threshold quantile are subsampled
-according to the desired number of samples and by the desired frequency.
-A user-defined number of observations with values exceeding the
-seasonally adjusted reference threshold are selected at random across an
-entire year. Control is given to the user over randomly selecting these
-“exceeds threshold” values by arguments that change weights and/or
-target local maxima.
+This subsampling method is also stratified by a seasonal reference threshold. Seasons and the threshold quantile are defined by the user. Observations with values occurring on dates at or below the associated seasonally adjusted reference threshold quantile are subsampled according to the desired number of samples and by the desired frequency. A user-defined number of observations with values exceeding the seasonally adjusted reference threshold are selected at random across an entire year. Control is given to the user over randomly selecting these “exceeds threshold” values by arguments that change weights and/or target local maxima.
 
-Most simply, `subsample()` allows a user to e.g. define the seasonal
-threshold as the 80%’ile of discharge, randomly select 1 water quality
-sample per month where discharge is lower than the discharge threshold,
-and randomly select 8 water quality samples per year where discharge is
-higher than the discharge threshold.
+Most simply, `subsample()` allows a user to e.g. define the seasonal threshold as the 80%’ile of discharge, randomly select 1 water quality sample per month where discharge is lower than the discharge threshold, and randomly select 8 water quality samples per year where discharge is higher than the discharge threshold.
 
 ### subsample_routine()
 
-The `subsample_routine()` function provides a method to select
-observations at a regular frequency. These frequencies include days, day
-of the week, and months. A user may subsample a provided water quality
-record at a specified interval of days (e.g. every 10 days), on a
-specified day of the week (e.g. every Tuesday), or on a day of the month
-(e.g. 15th of every month).
+The `subsample_routine()` function provides a method to select observations at a regular frequency. These frequencies include days, day of the week, and months. A user may subsample a provided water quality record at a specified interval of days (e.g. every 10 days), on a specified day of the week (e.g. every Tuesday), or on a day of the month (e.g. 15th of every month).
 
 ## Example
 
-This is a basic example which shows you how to examine the completeness
-of a record. Both the Specific Conductivity (SC) record and discharge
-(q) record in this example start in October of 2007.
+This is a basic example which shows you how to examine the completeness of a record. Both the Specific Conductivity (SC) record and discharge (q) record in this example start in October of 2007.
 
 ``` r
 library(streamsampler)
@@ -112,8 +65,7 @@ eval_dates(
 #> 1     98.68241     77
 ```
 
-You can also examine a record for gaps. In this example, the first 6
-gaps in the SC record are shown.
+You can also examine a record for gaps. In this example, the first 6 gaps in the SC record are shown.
 
 ``` r
 sc_gaps <- find_gaps(dates = sc_dates)
@@ -151,12 +103,9 @@ streamdat[(gap_start - 1):(gap_end + 1), ]
 #> 4702 2020-08-14  490 276
 ```
 
-There are several other useful functions offered by `streamsampler`, but
-the main functions are `subsample()` and `subsample_routine()`.
+There are several other useful functions offered by `streamsampler`, but the main functions are `subsample()` and `subsample_routine()`.
 
-To create a subsampled water quality record composed of observations at
-a specified frequency, use `subsample_routine()`. For example, subsample
-a daily water quality record to a monthly record.
+To create a subsampled water quality record composed of observations at a specified frequency, use `subsample_routine()`. For example, subsample a daily water quality record to a monthly record.
 
 ``` r
 sroutine <- subsample_routine(
@@ -183,7 +132,7 @@ legend("topleft",
 )
 ```
 
-<img src="man/figures/README-subsample_monthly-1.png" width="100%" />
+<img src="man/figures/README-subsample_monthly-1.png" width="100%"/>
 
 ``` r
 
@@ -210,17 +159,11 @@ legend(
 )
 ```
 
-<img src="man/figures/README-subsample_monthly-2.png" width="100%" />
+<img src="man/figures/README-subsample_monthly-2.png" width="100%"/>
 
-The `subsample_routine()` function is a wrapper for the base R function
-`seq.Date()`, and therefore does not rely on randomization - meaning,
-routine subsampling is non-random and results are reproducible.
+The `subsample_routine()` function is a wrapper for the base R function `seq.Date()`, and therefore does not rely on randomization - meaning, routine subsampling is non-random and results are reproducible.
 
-The `subsample()` function will perform stratified subsampling to
-produce a smaller, representative data set a daily water quality record.
-This function does use the base R `sample()` function, therefore a
-`seed` parameter (default is 123) is provided to ensure results are
-reproducible.
+The `subsample()` function will perform stratified subsampling to produce a smaller, representative data set a daily water quality record. This function does use the base R `sample()` function, therefore a `seed` parameter (default is 123) is provided to ensure results are reproducible.
 
 ``` r
 ss_sc <- subsample(
@@ -253,7 +196,7 @@ legend("topleft",
 )
 ```
 
-<img src="man/figures/README-subsample_peaks-1.png" width="100%" />
+<img src="man/figures/README-subsample_peaks-1.png" width="100%"/>
 
 ``` r
 
@@ -278,7 +221,7 @@ legend("topleft",
 )
 ```
 
-<img src="man/figures/README-subsample_peaks-2.png" width="100%" />
+<img src="man/figures/README-subsample_peaks-2.png" width="100%"/>
 
 ``` r
 
@@ -309,14 +252,9 @@ legend(
 )
 ```
 
-<img src="man/figures/README-subsample_peaks-3.png" width="100%" />
+<img src="man/figures/README-subsample_peaks-3.png" width="100%"/>
 
-The default is to subsample for 1 observation that is below the
-threshold for each month, and for 8 observations that are above the
-threshold for each year, where the threshold is the 80th percentile of
-each season (4 seasons starting in October). If the user desires
-observations to be selected at random without stratifying the water
-quality record, then `threshold` can be set to `1`. A simple example:
+The default is to subsample for 1 observation that is below the threshold for each month, and for 8 observations that are above the threshold for each year, where the threshold is the 80th percentile of each season (4 seasons starting in October). If the user desires observations to be selected at random without stratifying the water quality record, then `threshold` can be set to `1`. A simple example:
 
 ``` r
 rand_sc <- subsample(
@@ -345,15 +283,9 @@ legend("topleft",
 )
 ```
 
-<img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-3-1.png" width="100%"/>
 
-There are several ways to change the subsampling procedure. In the
-example below, SC will be used as the threshold reference instead of
-discharge; peaks, based on a 30-day sliding window, will be targeted for
-observations exceeding the 90th percentile; the year will be set to
-start in January with 3 seasons; and 1 observation below the threshold
-per quarter and 10 observations exceeding the threshold per year will be
-selected.
+There are several ways to change the subsampling procedure. In the example below, SC will be used as the threshold reference instead of discharge; peaks, based on a 30-day sliding window, will be targeted for observations exceeding the 90th percentile; the year will be set to start in January with 3 seasons; and 1 observation below the threshold per quarter and 10 observations exceeding the threshold per year will be selected.
 
 ``` r
 ss_peaks <- subsample(
@@ -390,7 +322,7 @@ legend("topleft",
 )
 ```
 
-<img src="man/figures/README-subsample_sc-1.png" width="100%" />
+<img src="man/figures/README-subsample_sc-1.png" width="100%"/>
 
 ``` r
 
@@ -414,10 +346,9 @@ legend("topleft",
 )
 ```
 
-<img src="man/figures/README-subsample_sc-2.png" width="100%" />
+<img src="man/figures/README-subsample_sc-2.png" width="100%"/>
 
-Changing the threshold reference, number of seasons, and the season
-start month alters how the data set is stratified.
+Changing the threshold reference, number of seasons, and the season start month alters how the data set is stratified.
 
 ``` r
 # Compare spread
@@ -451,9 +382,8 @@ legend(
 )
 ```
 
-<img src="man/figures/README-boxplots-1.png" width="100%" />
+<img src="man/figures/README-boxplots-1.png" width="100%"/>
 
 ## Reporting bugs
 
-Please consider reporting bugs and asking questions on the Issues page:
-<https://github.com/Kyle-Hurley/streamsampler/issues>
+Please consider reporting bugs and asking questions on the Issues page: <https://github.com/Kyle-Hurley/streamsampler/issues>

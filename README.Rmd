@@ -15,6 +15,12 @@ knitr::opts_chunk$set(
 
 # streamsampler
 
+<!-- badges: start -->
+[![CRAN status](https://www.r-pkg.org/badges/version/streamsampler)](https://CRAN.R-project.org/package=streamsampler)
+[![metacran downloads](https://cranlogs.r-pkg.org/badges/grand-total/streamsampler)](https://CRAN.R-project.org/package=streamsampler)
+<!-- badges: end -->
+
+
 The goal of `streamsampler` is to provide the ability to perform periodic and/or stratified subsampling of a water quality record of daily (or at least very frequent) observations. The water quality record can be subsampled based on a set frequency, such as the 15th of each month; or the record can be subsampled using a stratified approach based on a seasonal threshold of reference measurements, such as discharge, where observations occurring below and above the threshold are subsampled according to different parameters. For example, observations associated with a reference measurement below the threshold, subsampling is conducted at a specified frequency (e.g., monthly). Observations associated with a reference measurement exceeding the threshold are subsampled for each year of the record. Either method results in a subsampled record that reasonably approximates a water quality record that would have been produced by physical data collection.
 
 A subsampled water quality record allows a user to apply mathematical, statistical, and/or modeling techniques to a record with less frequent observations. For example, a user may find a 30-year record of daily water quality observations, subsample the record, fit a WRTDS model (from the `EGRET` package), and then compare the results to the complete record. A user may also implement `streamsampler` in their methods for conducting train/test or cross-validation splits in machine learning modeling.
